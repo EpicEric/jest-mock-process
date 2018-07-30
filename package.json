@@ -1,0 +1,57 @@
+{
+  "name": "jest-mock-process",
+  "version": "0.1.0",
+  "description": "Easily mock NodeJS process properties in Jest",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "test": "jest --coverage",
+    "test:watch": "jest --coverage --watchAll"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/EpicEric/jest-mock-process.git"
+  },
+  "keywords": [
+    "jest",
+    "mock",
+    "node",
+    "process",
+    "exit",
+    "stdout",
+    "stderr"
+  ],
+  "author": "Eric Rodrigues Pires <ericpires9@gmail.com>",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/EpicEric/jest-mock-process/issues"
+  },
+  "homepage": "https://github.com/EpicEric/jest-mock-process#readme",
+  "devDependencies": {
+    "@types/jest": "^23.3.1",
+    "@types/node": "^10.5.4",
+    "ts-jest": "^23.0.1",
+    "typescript": "^3.0.1"
+  },
+  "dependencies": {
+    "jest": "^23.4.2"
+  },
+  "jest": {
+    "moduleFileExtensions": [
+      "ts",
+      "tsx",
+      "js",
+      "jsx",
+      "json",
+      "node"
+    ],
+    "transform": {
+      "^.+\\.tsx?$": "ts-jest"
+    },
+    "testEnvironment": "node",
+    "testMatch": [
+      "**/__tests__/**/*.test.(ts|tsx)"
+    ]
+  }
+}

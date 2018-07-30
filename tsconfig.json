@@ -1,0 +1,21 @@
+{
+  "compilerOptions": {
+    "target": "es5",
+    "module": "commonjs",
+    "declaration": true,
+    "outDir": "dist",
+    "strict": true,
+    "strictNullChecks": false,
+    "strictPropertyInitialization": false,
+    "types": [
+      "node",
+      "jest"
+    ],
+    "esModuleInterop": true,
+    "preserveSymlinks": true
+  },
+  "include": [
+    "lib/*.ts",
+    "lib/!(__tests__)/**/*.ts"
+  ]
+}

@@ -1,0 +1,21 @@
+{
+	"extends": [
+		"tslint:recommended"
+	],
+	"rules": {
+		"quotemark": [
+			true,
+			"single",
+			"jsx-single"
+		],
+		"trailing-comma": false,
+		"indent":  [true, "spaces", 4],
+		"no-submodule-imports": false,
+		"no-empty": false,
+		"member-ordering": false,
+		"no-implicit-dependencies": [true, "dev"],
+		"no-var-requires": false,
+		"object-literal-sort-keys": false,
+		"interface-name": false
+	}
+}
