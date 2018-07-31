@@ -1,2 +1,6 @@
+.circleci/
 coverage/
 lib/
+
+tsconfig.json
+tslint.json

@@ -6,6 +6,7 @@
   "types": "dist/index.d.ts",
   "scripts": {
     "build": "tsc",
+    "coverage": "jest --coverage --coverageReporters=text-lcov | coveralls",
     "test": "jest --coverage",
     "test:watch": "jest --coverage --watchAll"
   },
@@ -23,7 +24,7 @@
     "stderr"
   ],
   "author": "Eric Rodrigues Pires <ericpires9@gmail.com>",
-  "license": "Apache-2.0",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/EpicEric/jest-mock-process/issues"
   },
@@ -31,6 +32,7 @@
   "devDependencies": {
     "@types/jest": "^23.3.1",
     "@types/node": "^10.5.4",
+    "coveralls": "^3.0.2",
     "ts-jest": "^23.0.1",
     "typescript": "^3.0.1"
   },
