@@ -7,6 +7,7 @@
   "scripts": {
     "build": "tsc",
     "coverage": "jest --coverage --coverageReporters=text-lcov | coveralls",
+    "postversion": "git push --follow-tags",
     "test": "jest --coverage",
     "test:watch": "jest --coverage --watchAll"
   },

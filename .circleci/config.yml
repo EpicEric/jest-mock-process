@@ -1,9 +1,13 @@
 version: 2
+
+defaults: &defaults
+  working_directory: ~/project
+  docker:
+    - image: circleci/node:8.9.1
+
 jobs:
   test:
-    docker:
-      - image: circleci/node:7.10
-    working_directory: ~/project
+    <<: *defaults
     steps:
       - checkout
       - restore_cache:
@@ -17,9 +21,7 @@ jobs:
             - ./node_modules
       - run: npm run test
   coverage:
-    docker:
-      - image: circleci/node:7.10
-    working_directory: ~/project
+    <<: *defaults
     steps:
       - checkout
       - restore_cache:
@@ -32,6 +34,22 @@ jobs:
           paths:
             - ./node_modules
       - run: npm run coverage
+  deploy:
+    <<: *defaults
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - dependency-cache-{{ checksum "package.json" }}
+            - dependency-cache-
+      - run: npm install
+      - save_cache:
+          key: dependency-cache-{{ checksum "package.json" }}
+          paths:
+            - ./node_modules
+      - run: npm run build
+      - run: echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" >> ~/.npmrc
+      - run: npm publish
 
 workflows:
   version: 2
@@ -41,3 +59,11 @@ workflows:
       - coverage:
           requires:
             - test
+      - deploy:
+          requires:
+            - coverage
+          filters:
+            branches:
+              only: master
+            tags:
+              only: /v[0-9]+(\.[0-9]+)*/
