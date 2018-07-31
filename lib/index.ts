@@ -7,12 +7,11 @@ export function mockProcessExit() {
     if (processExit.mockRestore) {
         processExit.mockRestore();
     }
-    const spyInstance = jest.spyOn(process, 'exit');
-    const spyImplementation = spyInstance.mockImplementation((_?: number) => {});
-    return {
-        ...spyImplementation,
-        mockRestore: spyInstance.mockRestore
-    } as jest.SpyInstance<(code?: number) => never>;
+    const spyImplementation = jest.spyOn(process, 'exit')
+        .mockImplementation((_?: number) => {}) as any;
+    return spyImplementation as jest.SpyInstance<(
+        code?: number
+    ) => never>;
 };
 
 /**
@@ -24,12 +23,13 @@ export function mockProcessStdout() {
     if (processStdout.mockRestore) {
         processStdout.mockRestore();
     }
-    const spyInstance = jest.spyOn(process.stdout, 'write');
-    const spyImplementation = spyInstance.mockImplementation(() => true);
-    return {
-        ...spyImplementation,
-        mockRestore: spyInstance.mockRestore
-    } as jest.SpyInstance<(...args: any[]) => boolean>;
+    const spyImplementation = jest.spyOn(process.stdout, 'write')
+        .mockImplementation(() => true) as any;
+    return spyImplementation as jest.SpyInstance<(
+        buffer: Buffer | string,
+        encoding?: string,
+        cb?: Function
+    ) => boolean>;
 };
 
 /**
@@ -41,10 +41,11 @@ export function mockProcessStderr() {
     if (processStderr.mockRestore) {
         processStderr.mockRestore();
     }
-    const spyInstance = jest.spyOn(process.stderr, 'write');
-    const spyImplementation = spyInstance.mockImplementation(() => true);
-    return {
-        ...spyImplementation,
-        mockRestore: spyInstance.mockRestore
-    } as jest.SpyInstance<(...args: any[]) => boolean>;
+    const spyImplementation = jest.spyOn(process.stderr, 'write')
+        .mockImplementation(() => true) as any;
+    return spyImplementation as jest.SpyInstance<(
+        buffer: Buffer | string,
+        encoding?: string,
+        cb?: Function
+    ) => boolean>;
 };

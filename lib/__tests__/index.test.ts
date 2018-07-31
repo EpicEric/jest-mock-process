@@ -19,13 +19,23 @@ describe('Mock Process Exit', () => {
         expect(mockExit).toHaveBeenCalledWith(-2);
     });
 
+    it('should be clearable', () => {
+        expect(mockExit).toHaveBeenCalledTimes(0);
+        process.exit(0);
+        expect(mockExit).toHaveBeenCalledTimes(1);
+        process.exit(0);
+        expect(mockExit).toHaveBeenCalledTimes(2);
+        mockExit.mockClear();
+        expect(mockExit).toHaveBeenCalledTimes(0);
+    });
+
     afterAll(() => {
         mockExit.mockRestore();
     });
 });
 
 describe('Mock Process Stdout', () => {
-    let mockStdout: jest.SpyInstance<(..._: any[]) => boolean>;
+    let mockStdout: jest.SpyInstance<(buffer: Buffer | string, encoding?: string, cb?: Function) => boolean>;
 
     beforeEach(() => {
         mockStdout = mockProcessStdout();
@@ -61,13 +71,23 @@ describe('Mock Process Stdout', () => {
         expect(mockStdout).toReturnWith(true);
     });
 
+    it('should be clearable', () => {
+        expect(mockStdout).toHaveBeenCalledTimes(0);
+        process.stdout.write('');
+        expect(mockStdout).toHaveBeenCalledTimes(1);
+        process.stdout.write('');
+        expect(mockStdout).toHaveBeenCalledTimes(2);
+        mockStdout.mockClear();
+        expect(mockStdout).toHaveBeenCalledTimes(0);
+    });
+
     afterAll(() => {
         mockStdout.mockRestore();
     });
 });
 
 describe('Mock Process Stderr', () => {
-    let mockStderr: jest.SpyInstance<(..._: any[]) => boolean>;
+    let mockStderr: jest.SpyInstance<(buffer: Buffer | string, encoding?: string, cb?: Function) => boolean>;
 
     beforeEach(() => {
         mockStderr = mockProcessStderr();
@@ -101,6 +121,16 @@ describe('Mock Process Stderr', () => {
         expect(mockStderr).toHaveBeenCalledTimes(1);
         expect(mockStderr).toHaveBeenCalledWith(expect.anything(), cb);
         expect(mockStderr).toReturnWith(true);
+    });
+
+    it('should be clearable', () => {
+        expect(mockStderr).toHaveBeenCalledTimes(0);
+        process.stderr.write('');
+        expect(mockStderr).toHaveBeenCalledTimes(1);
+        process.stderr.write('');
+        expect(mockStderr).toHaveBeenCalledTimes(2);
+        mockStderr.mockClear();
+        expect(mockStderr).toHaveBeenCalledTimes(0);
     });
 
     afterAll(() => {
