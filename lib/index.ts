@@ -49,3 +49,20 @@ export function mockProcessStderr() {
         cb?: Function
     ) => boolean>;
 };
+
+/**
+ * Helper function to create a mock of the Node.js method
+ * `console.log(message: any)`.
+ */
+export function mockConsoleLog() {
+    const consoleLog = console.log as any;
+    if (consoleLog.mockRestore) {
+        consoleLog.mockRestore();
+    }
+    const spyImplementation = jest.spyOn(console, 'log')
+        .mockImplementation(() => true) as any;
+    return spyImplementation as jest.SpyInstance<(
+        message?: any,
+        ...optionalParams: any[]
+    ) => void>;
+};

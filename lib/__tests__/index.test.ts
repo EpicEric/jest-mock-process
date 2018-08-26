@@ -1,4 +1,4 @@
-import { mockProcessExit, mockProcessStdout, mockProcessStderr } from '../index';
+import { mockProcessExit, mockProcessStdout, mockProcessStderr, mockConsoleLog } from '../index';
 
 describe('Mock Process Exit', () => {
     let mockExit: jest.SpyInstance<(_: number) => never>;
@@ -135,5 +135,40 @@ describe('Mock Process Stderr', () => {
 
     afterAll(() => {
         mockStderr.mockRestore();
+    });
+});
+
+describe('Mock Console Log', () => {
+    let mockLog: jest.SpyInstance<(message?: any, ...optionalParams: any[]) => void>;
+
+    beforeEach(() => {
+        mockLog = mockConsoleLog();
+    });
+
+    it('should receive a string', () => {
+        console.log('Hello, world!');
+        expect(mockLog).toHaveBeenCalledTimes(1);
+        expect(mockLog).toHaveBeenCalledWith('Hello, world!');
+    });
+
+    it('should receive an object', () => {
+        const obj = {'array': [], 'null': null};
+        console.log(obj);
+        expect(mockLog).toHaveBeenCalledTimes(1);
+        expect(mockLog).toHaveBeenCalledWith(obj);
+    });
+
+    it('should be clearable', () => {
+        expect(mockLog).toHaveBeenCalledTimes(0);
+        console.log('');
+        expect(mockLog).toHaveBeenCalledTimes(1);
+        console.log('');
+        expect(mockLog).toHaveBeenCalledTimes(2);
+        mockLog.mockClear();
+        expect(mockLog).toHaveBeenCalledTimes(0);
+    });
+
+    afterAll(() => {
+        mockLog.mockRestore();
     });
 });

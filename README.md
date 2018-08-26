@@ -27,15 +27,20 @@ var mockStderr = mockProcess.mockProcessStderr();
 process.stderr.write('Error');
 expect(mockStderr).toHaveBeenCalledWith('Error');
 
+var mockLog = mockProcess.mockConsoleLog();
+console.log('Browser log');
+expect(mockLog).toHaveBeenCalledWith('Browser log');
+
 mockExit.mockRestore();
 mockStdout.mockRestore();
 mockStderr.mockRestore();
+mockLog.mockRestore();
 ```
 
 ### TypeScript
 
 ```typescript
-import { mockProcessExit, mockProcessStdout, mockProcessStderr } from 'jest-mock-process';
+import { mockProcessExit, mockProcessStdout, mockProcessStderr, mockConsoleLog } from 'jest-mock-process';
 
 const mockExit = mockProcessExit();
 process.exit(1);
@@ -49,7 +54,12 @@ const mockStderr = mockProcessStderr();
 process.stderr.write('Error');
 expect(mockStderr).toHaveBeenCalledWith('Error');
 
+const mockLog = mockConsoleLog();
+console.log('Browser log');
+expect(mockLog).toHaveBeenCalledWith('Browser log');
+
 mockExit.mockRestore();
 mockStdout.mockRestore();
 mockStderr.mockRestore();
+mockLog.mockRestore();
 ```
