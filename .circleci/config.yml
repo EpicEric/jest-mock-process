@@ -19,20 +19,6 @@ jobs:
           key: dependency-cache-{{ checksum "package.json" }}
           paths:
             - ./node_modules
-      - run: npm run test
-  coverage:
-    <<: *defaults
-    steps:
-      - checkout
-      - restore_cache:
-          keys:
-            - dependency-cache-{{ checksum "package.json" }}
-            - dependency-cache-
-      - run: npm install
-      - save_cache:
-          key: dependency-cache-{{ checksum "package.json" }}
-          paths:
-            - ./node_modules
       - run: npm run coverage
   deploy:
     <<: *defaults
@@ -55,13 +41,15 @@ workflows:
   version: 2
   commit:
     jobs:
-      - test
-      - coverage:
-          requires:
-            - test
-      - deploy:
-          requires:
-            - coverage
+      - test:
           filters:
             tags:
-              only: /v[0-9]+(\.[0-9]+)*/
+              only: /.*/
+      - deploy:
+          requires:
+            - test
+          filters:
+            tags:
+              only: /v[0-9]+(\.[0-9]+)*$/
+            branches:
+              ignore: /.*/
