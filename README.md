@@ -18,6 +18,8 @@ var mockProcess = require('jest-mock-process');
 var mockExit = mockProcess.mockProcessExit();
 process.exit(1);
 expect(mockExit).toHaveBeenCalledWith(1);
+mockExit = mockProcess.mockProcessExit(new Error('Mock'));
+expect(() => process.exit(0)).toThrowError('Mock');
 
 var mockStdout = mockProcess.mockProcessStdout();
 process.stdout.write('Hello, world!');
@@ -45,6 +47,8 @@ import { mockProcessExit, mockProcessStdout, mockProcessStderr, mockConsoleLog }
 const mockExit = mockProcessExit();
 process.exit(1);
 expect(mockExit).toHaveBeenCalledWith(1);
+mockExit = mockProcessExit(new Error('Mock'));
+expect(() => process.exit(0)).toThrowError('Mock');
 
 const mockStdout = mockProcessStdout();
 process.stdout.write('Hello, world!');
