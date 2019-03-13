@@ -1,6 +1,6 @@
 {
   "name": "jest-mock-process",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Easily mock NodeJS process properties in Jest",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
