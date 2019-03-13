@@ -29,6 +29,18 @@ describe('Mock Process Exit', () => {
         expect(mockExit).toHaveBeenCalledTimes(0);
     });
 
+    it('should allow an arbitrary error to be thrown on exit site', () => {
+        const err = new Error('Mock');
+        mockExit = mockProcessExit(err);
+        expect(() => process.exit(0)).toThrowError(err);
+    });
+
+    it('should not throw a falsy arbitrary error', () => {
+        const err = 0;
+        mockExit = mockProcessExit(err);
+        expect(() => process.exit(0)).not.toThrow();
+    });
+
     afterAll(() => {
         mockExit.mockRestore();
     });
@@ -152,7 +164,7 @@ describe('Mock Console Log', () => {
     });
 
     it('should receive an object', () => {
-        const obj = {'array': [], 'null': null};
+        const obj = {'array': [] as number[], 'null': null as number};
         console.log(obj);
         expect(mockLog).toHaveBeenCalledTimes(1);
         expect(mockLog).toHaveBeenCalledWith(obj);

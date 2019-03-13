@@ -1,14 +1,23 @@
 /**
  * Helper function to create a mock of the Node.js method
  * `process.exit(code: number)`.
+ *
+ * @param {Object} err Optional error to raise. If unspecified or falsy, calling `process.exit` will resume code
+ * execution instead of raising an error.
  */
-export function mockProcessExit() {
+export function mockProcessExit(err?: any) {
     const processExit = process.exit as any;
     if (processExit.mockRestore) {
         processExit.mockRestore();
     }
-    const spyImplementation = jest.spyOn(process, 'exit')
-        .mockImplementation((_?: number) => {}) as any;
+    let spyImplementation: any;
+    if (err) {
+        spyImplementation = jest.spyOn(process, 'exit')
+            .mockImplementation((_?: number) => {throw err});
+    } else {
+        spyImplementation = (jest.spyOn(process, 'exit') as any)
+            .mockImplementation((_?: number) => {});
+    }
     return spyImplementation as jest.SpyInstance<(
         code?: number
     ) => never>;
@@ -23,8 +32,9 @@ export function mockProcessStdout() {
     if (processStdout.mockRestore) {
         processStdout.mockRestore();
     }
-    const spyImplementation = jest.spyOn(process.stdout, 'write')
-        .mockImplementation(() => true) as any;
+    let spyImplementation: any;
+    spyImplementation = jest.spyOn(process.stdout, 'write')
+        .mockImplementation(() => true);
     return spyImplementation as jest.SpyInstance<(
         buffer: Buffer | string,
         encoding?: string,
@@ -41,8 +51,9 @@ export function mockProcessStderr() {
     if (processStderr.mockRestore) {
         processStderr.mockRestore();
     }
-    const spyImplementation = jest.spyOn(process.stderr, 'write')
-        .mockImplementation(() => true) as any;
+    let spyImplementation: any;
+    spyImplementation = jest.spyOn(process.stderr, 'write')
+        .mockImplementation(() => true);
     return spyImplementation as jest.SpyInstance<(
         buffer: Buffer | string,
         encoding?: string,
@@ -59,8 +70,9 @@ export function mockConsoleLog() {
     if (consoleLog.mockRestore) {
         consoleLog.mockRestore();
     }
-    const spyImplementation = jest.spyOn(console, 'log')
-        .mockImplementation(() => true) as any;
+    let spyImplementation: any;
+    spyImplementation = jest.spyOn(console, 'log')
+        .mockImplementation(() => {});
     return spyImplementation as jest.SpyInstance<(
         message?: any,
         ...optionalParams: any[]
