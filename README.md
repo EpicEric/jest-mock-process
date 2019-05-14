@@ -44,7 +44,7 @@ mockLog.mockRestore();
 ```typescript
 import { mockProcessExit, mockProcessStdout, mockProcessStderr, mockConsoleLog } from 'jest-mock-process';
 
-const mockExit = mockProcessExit();
+let mockExit = mockProcessExit();
 process.exit(1);
 expect(mockExit).toHaveBeenCalledWith(1);
 mockExit = mockProcessExit(new Error('Mock'));
