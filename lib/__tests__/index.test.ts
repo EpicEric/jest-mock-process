@@ -1,4 +1,4 @@
-import { mockProcessExit, mockProcessStdout, mockProcessStderr, mockConsoleLog } from '../index';
+import { mockedRun, mockProcessExit, mockProcessStdout, mockProcessStderr, mockConsoleLog } from '../index';
 
 describe('Mock Process Exit', () => {
     let mockExit: jest.SpyInstance<(_: number) => never>;
@@ -184,3 +184,23 @@ describe('Mock Console Log', () => {
         mockLog.mockRestore();
     });
 });
+
+describe('mockedRun', () => {
+    it('tracks stdout', () => {
+        const mocks = mockedRun({
+            stdout: mockProcessStdout,
+            stderr: mockProcessStderr,
+            exit: mockProcessExit,
+            log: mockConsoleLog,
+        })(() => {
+            process.stdout.write("stdout payload")
+            process.stderr.write("stderr payload")
+            // process.exit(-1)
+            console.log("log payload")
+        })
+        expect(mocks.stdout).toHaveBeenCalledTimes(1);
+        expect(mocks.stderr).toHaveBeenCalledTimes(1);
+        expect(mocks.exit).toHaveBeenCalledTimes(0);
+        expect(mocks.log).toHaveBeenCalledTimes(1);
+    });
+})

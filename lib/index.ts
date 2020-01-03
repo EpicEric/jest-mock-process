@@ -50,3 +50,16 @@ export const mockConsoleLog = () => spyOnImplementing(
     'log',
     () => {},
 )
+
+/**
+ * Helper function to run a function with certain mocks in place.
+ */
+export const mockedRun = (callers: { [K in keyof any]: () => jest.SpyInstance}) => (f: () => void) => {
+    let mocks = Object.entries(callers)
+        .map(([k, mocker]) => [k, mocker()])
+        .reduce((o: any, [k, v]: any) => {o[k] = v; return o}, {})
+
+    f()
+
+    return mocks as Record<keyof typeof callers, jest.SpyInstance>
+}
