@@ -1,13 +1,14 @@
-const maybeMockRestore = (a: any): void => a.mockRestore ? a.mockRestore() : undefined
+const maybeMockRestore = (a: any): void => a.mockRestore ? a.mockRestore() : undefined;
 
 export function spyOnImplementing<
     T extends object,
     M extends keyof T,
     F extends T[M] extends (...args: any[]) => any ? T[M] : never,
->(target: T, property: M, impl: F): jest.SpyInstance  {
-    maybeMockRestore(target[property])
-    return jest.spyOn(target, property).mockImplementation(impl)
+>(target: T, property: M, impl: F): jest.SpyInstance<ReturnType<F>, ArgsType<F>> {
+    maybeMockRestore(target[property]);
+    return jest.spyOn(target, property).mockImplementation(impl);
 }
+
 /**
  * Helper function to create a mock of the Node.js method
  * `process.exit(code: number)`.
@@ -18,8 +19,8 @@ export function spyOnImplementing<
 export const mockProcessExit = (err?: any) => spyOnImplementing(
     process,
     'exit',
-    err ? (_?: number) => {throw err} : ((_?: number) => {}) as (_?: number) => never
-)
+    (err ? (_?: number) => { throw err; } : ((_?: number) => {})) as typeof process.exit
+);
 
 /**
  * Helper function to create a mock of the Node.js method
@@ -28,8 +29,8 @@ export const mockProcessExit = (err?: any) => spyOnImplementing(
 export const mockProcessStdout = () => spyOnImplementing(
     process.stdout,
     'write',
-    () => true,
-)
+    (() => true) as typeof process.stdout.write,
+);
 
 /**
  * Helper function to create a mock of the Node.js method
@@ -38,8 +39,8 @@ export const mockProcessStdout = () => spyOnImplementing(
 export const mockProcessStderr = () => spyOnImplementing(
     process.stderr,
     'write',
-    () => true,
-)
+    (() => true) as typeof process.stderr.write,
+);
 
 /**
  * Helper function to create a mock of the Node.js method
@@ -48,18 +49,18 @@ export const mockProcessStderr = () => spyOnImplementing(
 export const mockConsoleLog = () => spyOnImplementing(
     console,
     'log',
-    () => {},
-)
+    (() => {}) as typeof console.log,
+);
 
 /**
  * Helper function to run a function with certain mocks in place.
  */
 export const mockedRun = (callers: { [K in keyof any]: () => jest.SpyInstance}) => (f: () => void) => {
-    let mocks = Object.entries(callers)
+    const mocks = Object.entries(callers)
         .map(([k, mocker]) => [k, mocker()])
-        .reduce((o: any, [k, v]: any) => {o[k] = v; return o}, {})
+        .reduce((o: any, [k, v]: any) => { o[k] = v; return o; }, {});
 
-    f()
+    f();
 
-    return mocks as Record<keyof typeof callers, jest.SpyInstance>
-}
+    return mocks as Record<keyof typeof callers, jest.SpyInstance>;
+};

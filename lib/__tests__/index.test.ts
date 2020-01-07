@@ -1,7 +1,7 @@
-import { mockedRun, mockProcessExit, mockProcessStdout, mockProcessStderr, mockConsoleLog } from '../index';
+import { mockConsoleLog, mockedRun, mockProcessExit, mockProcessStderr, mockProcessStdout } from '../index';
 
 describe('Mock Process Exit', () => {
-    let mockExit: jest.SpyInstance<(_: number) => never>;
+    let mockExit: jest.SpyInstance<never, ArgsType<typeof process.exit>>;
 
     beforeEach(() => {
         mockExit = mockProcessExit();
@@ -47,7 +47,7 @@ describe('Mock Process Exit', () => {
 });
 
 describe('Mock Process Stdout', () => {
-    let mockStdout: jest.SpyInstance<(buffer: Buffer | string, encoding?: string, cb?: Function) => boolean>;
+    let mockStdout: jest.SpyInstance<boolean, ArgsType<typeof process.stdout.write>>;
 
     beforeEach(() => {
         mockStdout = mockProcessStdout();
@@ -99,7 +99,7 @@ describe('Mock Process Stdout', () => {
 });
 
 describe('Mock Process Stderr', () => {
-    let mockStderr: jest.SpyInstance<(buffer: Buffer | string, encoding?: string, cb?: Function) => boolean>;
+    let mockStderr: jest.SpyInstance<boolean, ArgsType<typeof process.stderr.write>>;
 
     beforeEach(() => {
         mockStderr = mockProcessStderr();
@@ -151,7 +151,7 @@ describe('Mock Process Stderr', () => {
 });
 
 describe('Mock Console Log', () => {
-    let mockLog: jest.SpyInstance<(message?: any, ...optionalParams: any[]) => void>;
+    let mockLog: jest.SpyInstance<void, ArgsType<typeof console.log>>;
 
     beforeEach(() => {
         mockLog = mockConsoleLog();
@@ -164,7 +164,7 @@ describe('Mock Console Log', () => {
     });
 
     it('should receive an object', () => {
-        const obj = {'array': [] as number[], 'null': null as number};
+        const obj = {array: [] as any[], null: null as any};
         console.log(obj);
         expect(mockLog).toHaveBeenCalledTimes(1);
         expect(mockLog).toHaveBeenCalledWith(obj);
@@ -193,14 +193,14 @@ describe('mockedRun', () => {
             exit: mockProcessExit,
             log: mockConsoleLog,
         })(() => {
-            process.stdout.write("stdout payload")
-            process.stderr.write("stderr payload")
+            process.stdout.write('stdout payload');
+            process.stderr.write('stderr payload');
             // process.exit(-1)
-            console.log("log payload")
-        })
+            console.log('log payload');
+        });
         expect(mocks.stdout).toHaveBeenCalledTimes(1);
         expect(mocks.stderr).toHaveBeenCalledTimes(1);
         expect(mocks.exit).toHaveBeenCalledTimes(0);
         expect(mocks.log).toHaveBeenCalledTimes(1);
     });
-})
+});
