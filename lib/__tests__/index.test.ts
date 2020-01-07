@@ -195,12 +195,12 @@ describe('mockedRun', () => {
         })(() => {
             process.stdout.write('stdout payload');
             process.stderr.write('stderr payload');
-            // process.exit(-1)
+            process.exit(-1);
             console.log('log payload');
         });
         expect(mocks.stdout).toHaveBeenCalledTimes(1);
         expect(mocks.stderr).toHaveBeenCalledTimes(1);
-        expect(mocks.exit).toHaveBeenCalledTimes(0);
+        expect(mocks.exit).toHaveBeenCalledTimes(1);
         expect(mocks.log).toHaveBeenCalledTimes(1);
     });
 });
