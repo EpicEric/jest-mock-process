@@ -39,12 +39,12 @@ jobs:
 
 workflows:
   version: 2
+  pr-acceptance-tests:
+    jobs:
+      - test
   commit:
     jobs:
-      - test:
-          filters:
-            tags:
-              only: /.*/
+      - test
       - deploy:
           requires:
             - test
