@@ -1,4 +1,5 @@
-const maybeMockRestore = (a: any): void => a.mockRestore ? a.mockRestore() : undefined;
+const maybeMockRestore = (a: any): void =>
+    a.mockRestore && typeof a.mockRestore === 'function' ? a.mockRestore() : undefined;
 
 type FunctionPropertyNames<T> = {[K in keyof T]: T[K] extends (...args: any[]) => any ? K : never}[keyof T];
 
