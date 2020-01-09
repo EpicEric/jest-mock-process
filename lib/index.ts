@@ -1,6 +1,6 @@
 const maybeMockRestore = (a: any): void => a.mockRestore ? a.mockRestore() : undefined;
 
-export function spyOnImplementing<
+function spyOnImplementing<
     T extends object,
     M extends keyof T,
     F extends T[M] extends (...args: any[]) => any ? T[M] : never,
@@ -52,15 +52,55 @@ export const mockConsoleLog = () => spyOnImplementing(
     (() => {}) as typeof console.log,
 );
 
+export interface MockedRunMocks {
+    [key: string]: jest.SpyInstance;
+}
+
+export interface MockedRunResult {
+    error?: any;
+    result?: any;
+    mocks: MockedRunMocks;
+    mockRestore: () => void;
+}
+
 /**
- * Helper function to run a function with certain mocks in place.
+ * Helper function to run a synchronous function with provided mocks in place.
  */
-export const mockedRun = (callers: { [K in keyof any]: () => jest.SpyInstance}) => (f: () => void) => {
+export const mockedRun = (
+    callers: {[K in keyof any]: () => jest.SpyInstance}
+) => (f: () => any) => {
     const mocks = Object.entries(callers)
-        .map(([k, mocker]) => [k, mocker()])
-        .reduce((o: any, [k, v]: any) => { o[k] = v; return o; }, {});
+        .map<[string, jest.SpyInstance]>(([k, mocker]) => [k, mocker()])
+        .reduce((o, [k, v]) => { o[k] = v; return o; }, {} as MockedRunMocks);
 
-    f();
+    const mockRestore = () => Object.values(mocks).map((mock) => maybeMockRestore(mock));
+    const result: MockedRunResult = {mocks, mockRestore};
+    try {
+        result.result = f();
+    } catch (error) {
+        result.error = error;
+    }
 
-    return mocks as Record<keyof typeof callers, jest.SpyInstance>;
+    return result;
+};
+
+/**
+ * Helper function to run an asynchronous function with provided mocks in place.
+ */
+export const asyncMockedRun = (
+    callers: {[K in keyof any]: () => jest.SpyInstance}
+) => async (f: () => Promise<any>) => {
+    const mocks = Object.entries(callers)
+        .map<[string, jest.SpyInstance]>(([k, mocker]) => [k, mocker()])
+        .reduce((o, [k, v]) => { o[k] = v; return o; }, {} as MockedRunMocks);
+
+    const mockRestore = () => Object.values(mocks).map((mock) => maybeMockRestore(mock));
+    const result: MockedRunResult = {mocks, mockRestore};
+    try {
+        result.result = await f();
+    } catch (error) {
+        result.error = error;
+    }
+
+    return result;
 };
