@@ -190,7 +190,7 @@ describe('mockedRun', () => {
     let mockRun: (_: () => any) => MockedRunResult;
     let mocks: MockedRunResult;
 
-    beforeEach(() => {
+    beforeAll(() => {
         mockRun = mockedRun({
             stdout: mockProcessStdout,
             stderr: mockProcessStderr,
@@ -245,7 +245,7 @@ describe('asyncMockedRun', () => {
     let mockRun: (_: () => any) => Promise<MockedRunResult>;
     let mocks: MockedRunResult;
 
-    beforeEach(() => {
+    beforeAll(() => {
         mockRun = asyncMockedRun({
             stdout: mockProcessStdout,
             stderr: mockProcessStderr,
