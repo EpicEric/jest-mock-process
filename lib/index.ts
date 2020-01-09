@@ -1,10 +1,13 @@
 const maybeMockRestore = (a: any): void => a.mockRestore ? a.mockRestore() : undefined;
 
-function spyOnImplementing<
+type FunctionPropertyNames<T> = { [K in keyof T]: T[K] extends (...args: any[]) => any ? K : never }[keyof T];
+
+export function spyOnImplementing<
     T extends object,
-    M extends keyof T,
-    F extends T[M] extends (...args: any[]) => any ? T[M] : never,
->(target: T, property: M, impl: F): jest.SpyInstance<ReturnType<F>, ArgsType<F>> {
+    M extends FunctionPropertyNames<T>,
+    F extends T[M],
+    I extends (...args: any[]) => any,
+>(target: T, property: M, impl: I): jest.SpyInstance<ReturnType<F>, ArgsType<F>> {
     maybeMockRestore(target[property]);
     return jest.spyOn(target, property).mockImplementation(impl);
 }
@@ -19,7 +22,7 @@ function spyOnImplementing<
 export const mockProcessExit = (err?: any) => spyOnImplementing(
     process,
     'exit',
-    (err ? (_?: number) => { throw err; } : ((_?: number) => {})) as typeof process.exit
+    (err ? (_?: number) => { throw err; } : ((_?: number) => {}))
 );
 
 /**
@@ -29,7 +32,7 @@ export const mockProcessExit = (err?: any) => spyOnImplementing(
 export const mockProcessStdout = () => spyOnImplementing(
     process.stdout,
     'write',
-    (() => true) as typeof process.stdout.write,
+    (() => true),
 );
 
 /**
@@ -39,7 +42,7 @@ export const mockProcessStdout = () => spyOnImplementing(
 export const mockProcessStderr = () => spyOnImplementing(
     process.stderr,
     'write',
-    (() => true) as typeof process.stderr.write,
+    (() => true),
 );
 
 /**
@@ -49,7 +52,7 @@ export const mockProcessStderr = () => spyOnImplementing(
 export const mockConsoleLog = () => spyOnImplementing(
     console,
     'log',
-    (() => {}) as typeof console.log,
+    (() => {}),
 );
 
 export interface MockedRunMocks {
