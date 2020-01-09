@@ -1,12 +1,19 @@
 const maybeMockRestore = (a: any): void => a.mockRestore ? a.mockRestore() : undefined;
 
-type FunctionPropertyNames<T> = { [K in keyof T]: T[K] extends (...args: any[]) => any ? K : never }[keyof T];
+type FunctionPropertyNames<T> = {[K in keyof T]: T[K] extends (...args: any[]) => any ? K : never}[keyof T];
 
+/**
+ * Helper function for manually creating new spy mocks of functions not supported by this module.
+ *
+ * @param target Object containing the function that will be mocked.
+ * @param property Name of the function that will be mocked.
+ * @param impl Mock implementation of the. The return type must match the target function.
+ */
 export function spyOnImplementing<
     T extends object,
     M extends FunctionPropertyNames<T>,
     F extends T[M],
-    I extends (...args: any[]) => any,
+    I extends (...args: any[]) => ReturnType<F>,
 >(target: T, property: M, impl: I): jest.SpyInstance<ReturnType<F>, ArgsType<F>> {
     maybeMockRestore(target[property]);
     return jest.spyOn(target, property).mockImplementation(impl);
@@ -22,7 +29,7 @@ export function spyOnImplementing<
 export const mockProcessExit = (err?: any) => spyOnImplementing(
     process,
     'exit',
-    (err ? (_?: number) => { throw err; } : ((_?: number) => {}))
+    (err ? (_?: number) => { throw err; } : ((_?: number) => {})) as () => never,
 );
 
 /**
