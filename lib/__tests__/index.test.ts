@@ -1,4 +1,3 @@
-import { resolve } from 'dns';
 import { asyncMockedRun, mockConsoleLog, mockedRun, MockedRunResult, mockProcessExit, mockProcessStderr,
     mockProcessStdout } from '../index';
 
@@ -261,12 +260,12 @@ describe('asyncMockedRun', () => {
 
     it('should call every mock once', async () => {
         result = await mockRun(() => {
-            return new Promise((res) => {
+            return new Promise((resolve) => {
                 process.stdout.write('stdout payload');
                 process.stderr.write('stderr payload');
                 process.exit(-1);
                 console.log('log payload');
-                res();
+                resolve();
             });
         });
         expect(result.mocks.stdout).toHaveBeenCalledTimes(1);
@@ -277,12 +276,12 @@ describe('asyncMockedRun', () => {
 
     it('should receive the correct arguments', async () => {
         result = await mockRun(() => {
-            return new Promise((res) => {
+            return new Promise((resolve) => {
                 process.stdout.write('stdout payload');
                 process.stderr.write('stderr payload');
                 process.exit(-1);
                 console.log('log payload');
-                res();
+                resolve();
             });
         });
         expect(result.mocks.stdout).toHaveBeenCalledWith('stdout payload');
@@ -293,8 +292,8 @@ describe('asyncMockedRun', () => {
 
     it('should receive the correct return value', async () => {
         result = await mockRun(() => {
-            return new Promise((res) => {
-                res('return string');
+            return new Promise((resolve) => {
+                resolve('return string');
             });
         });
         expect(result.result).toEqual('return string');
@@ -303,8 +302,8 @@ describe('asyncMockedRun', () => {
     it('should receive the correct thrown value', async () => {
         const expectedError = new Error('return string');
         result = await mockRun(() => {
-            return new Promise((_, rej) => {
-                rej(expectedError);
+            return new Promise((_, reject) => {
+                reject(expectedError);
             });
         });
         expect(result.error).toEqual(expectedError);
