@@ -62,55 +62,56 @@ export const mockConsoleLog = () => spyOnImplementing(
     (() => {}),
 );
 
-export interface MockedRunMocks {
-    [key: string]: jest.SpyInstance;
-}
-
 export interface MockedRunResult {
     error?: any;
     result?: any;
-    mocks: MockedRunMocks;
-    mockRestore: () => void;
+    [_: string]: jest.SpyInstance;
 }
 
 /**
  * Helper function to run a synchronous function with provided mocks in place.
  */
 export const mockedRun = (
-    callers: {[K in keyof any]: () => jest.SpyInstance}
+    callers: {[_: string]: () => jest.SpyInstance}
 ) => (f: () => any) => {
-    const mocks = Object.entries(callers)
-        .map<[string, jest.SpyInstance]>(([k, mocker]) => [k, mocker()])
-        .reduce((o, [k, v]) => { o[k] = v; return o; }, {} as MockedRunMocks);
+    const mocks: MockedRunResult = {};
+    const mockers: {[_: string]: jest.SpyInstance} = Object.entries(callers).map(([k, caller]) => ({[k]: caller()}))
+        .reduce((o, acc) => ({...acc, ...o}));
 
-    const mockRestore = () => Object.values(mocks).map((mock) => maybeMockRestore(mock));
-    const result: MockedRunResult = {mocks, mockRestore};
     try {
-        result.result = f();
+        mocks.result = f();
     } catch (error) {
-        result.error = error;
+        mocks.error = error;
     }
 
-    return result;
+    Object.entries(mockers).map(([k, mocker]) => {
+        mocks[k] = Object.assign({}, mocker);
+        maybeMockRestore(mocker);
+    });
+
+    return mocks;
 };
 
 /**
  * Helper function to run an asynchronous function with provided mocks in place.
  */
 export const asyncMockedRun = (
-    callers: {[K in keyof any]: () => jest.SpyInstance}
+    callers: {[_: string]: () => jest.SpyInstance}
 ) => async (f: () => Promise<any>) => {
-    const mocks = Object.entries(callers)
-        .map<[string, jest.SpyInstance]>(([k, mocker]) => [k, mocker()])
-        .reduce((o, [k, v]) => { o[k] = v; return o; }, {} as MockedRunMocks);
+    const mocks: MockedRunResult = {};
+    const mockers: {[_: string]: jest.SpyInstance} = Object.entries(callers).map(([k, caller]) => ({[k]: caller()}))
+        .reduce((o, acc) => ({...acc, ...o}));
 
-    const mockRestore = () => Object.values(mocks).map((mock) => maybeMockRestore(mock));
-    const result: MockedRunResult = {mocks, mockRestore};
     try {
-        result.result = await f();
+        mocks.result = await f();
     } catch (error) {
-        result.error = error;
+        mocks.error = error;
     }
 
-    return result;
+    Object.entries(mockers).map(([k, mocker]) => {
+        mocks[k] = Object.assign({}, mocker);
+        maybeMockRestore(mocker);
+    });
+
+    return mocks;
 };

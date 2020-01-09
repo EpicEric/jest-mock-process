@@ -188,7 +188,7 @@ describe('Mock Console Log', () => {
 
 describe('mockedRun', () => {
     let mockRun: (_: () => any) => MockedRunResult;
-    let result: MockedRunResult;
+    let mocks: MockedRunResult;
 
     beforeEach(() => {
         mockRun = mockedRun({
@@ -200,54 +200,50 @@ describe('mockedRun', () => {
     });
 
     it('should call every mock once', () => {
-        result = mockRun(() => {
+        mocks = mockRun(() => {
             process.stdout.write('stdout payload');
             process.stderr.write('stderr payload');
             process.exit(-1);
             console.log('log payload');
         });
-        expect(result.mocks.stdout).toHaveBeenCalledTimes(1);
-        expect(result.mocks.stderr).toHaveBeenCalledTimes(1);
-        expect(result.mocks.exit).toHaveBeenCalledTimes(1);
-        expect(result.mocks.log).toHaveBeenCalledTimes(1);
+        expect(mocks.stdout).toHaveBeenCalledTimes(1);
+        expect(mocks.stderr).toHaveBeenCalledTimes(1);
+        expect(mocks.exit).toHaveBeenCalledTimes(1);
+        expect(mocks.log).toHaveBeenCalledTimes(1);
     });
 
     it('should receive the correct arguments', () => {
-        result = mockRun(() => {
+        mocks = mockRun(() => {
             process.stdout.write('stdout payload');
             process.stderr.write('stderr payload');
             process.exit(-1);
             console.log('log payload');
         });
-        expect(result.mocks.stdout).toHaveBeenCalledWith('stdout payload');
-        expect(result.mocks.stderr).toHaveBeenCalledWith('stderr payload');
-        expect(result.mocks.exit).toHaveBeenCalledWith(-1);
-        expect(result.mocks.log).toHaveBeenCalledWith('log payload');
+        expect(mocks.stdout).toHaveBeenCalledWith('stdout payload');
+        expect(mocks.stderr).toHaveBeenCalledWith('stderr payload');
+        expect(mocks.exit).toHaveBeenCalledWith(-1);
+        expect(mocks.log).toHaveBeenCalledWith('log payload');
     });
 
     it('should receive the correct return value', () => {
-        result = mockRun(() => {
+        mocks = mockRun(() => {
             return 'return string';
         });
-        expect(result.result).toEqual('return string');
+        expect(mocks.result).toEqual('return string');
     });
 
     it('should receive the correct thrown value', () => {
         const expectedError = new Error('return string');
-        result = mockRun(() => {
+        mocks = mockRun(() => {
             throw expectedError;
         });
-        expect(result.error).toEqual(expectedError);
-    });
-
-    afterAll(() => {
-        result.mockRestore();
+        expect(mocks.error).toEqual(expectedError);
     });
 });
 
 describe('asyncMockedRun', () => {
     let mockRun: (_: () => any) => Promise<MockedRunResult>;
-    let result: MockedRunResult;
+    let mocks: MockedRunResult;
 
     beforeEach(() => {
         mockRun = asyncMockedRun({
@@ -259,7 +255,7 @@ describe('asyncMockedRun', () => {
     });
 
     it('should call every mock once', async () => {
-        result = await mockRun(() => {
+        mocks = await mockRun(() => {
             return new Promise((resolve) => {
                 process.stdout.write('stdout payload');
                 process.stderr.write('stderr payload');
@@ -268,14 +264,14 @@ describe('asyncMockedRun', () => {
                 resolve();
             });
         });
-        expect(result.mocks.stdout).toHaveBeenCalledTimes(1);
-        expect(result.mocks.stderr).toHaveBeenCalledTimes(1);
-        expect(result.mocks.exit).toHaveBeenCalledTimes(1);
-        expect(result.mocks.log).toHaveBeenCalledTimes(1);
+        expect(mocks.stdout).toHaveBeenCalledTimes(1);
+        expect(mocks.stderr).toHaveBeenCalledTimes(1);
+        expect(mocks.exit).toHaveBeenCalledTimes(1);
+        expect(mocks.log).toHaveBeenCalledTimes(1);
     });
 
     it('should receive the correct arguments', async () => {
-        result = await mockRun(() => {
+        mocks = await mockRun(() => {
             return new Promise((resolve) => {
                 process.stdout.write('stdout payload');
                 process.stderr.write('stderr payload');
@@ -284,32 +280,28 @@ describe('asyncMockedRun', () => {
                 resolve();
             });
         });
-        expect(result.mocks.stdout).toHaveBeenCalledWith('stdout payload');
-        expect(result.mocks.stderr).toHaveBeenCalledWith('stderr payload');
-        expect(result.mocks.exit).toHaveBeenCalledWith(-1);
-        expect(result.mocks.log).toHaveBeenCalledWith('log payload');
+        expect(mocks.stdout).toHaveBeenCalledWith('stdout payload');
+        expect(mocks.stderr).toHaveBeenCalledWith('stderr payload');
+        expect(mocks.exit).toHaveBeenCalledWith(-1);
+        expect(mocks.log).toHaveBeenCalledWith('log payload');
     });
 
     it('should receive the correct return value', async () => {
-        result = await mockRun(() => {
+        mocks = await mockRun(() => {
             return new Promise((resolve) => {
                 resolve('return string');
             });
         });
-        expect(result.result).toEqual('return string');
+        expect(mocks.result).toEqual('return string');
     });
 
     it('should receive the correct thrown value', async () => {
         const expectedError = new Error('return string');
-        result = await mockRun(() => {
+        mocks = await mockRun(() => {
             return new Promise((_, reject) => {
                 reject(expectedError);
             });
         });
-        expect(result.error).toEqual(expectedError);
-    });
-
-    afterAll(() => {
-        result.mockRestore();
+        expect(mocks.error).toEqual(expectedError);
     });
 });
