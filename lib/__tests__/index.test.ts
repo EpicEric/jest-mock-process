@@ -187,17 +187,13 @@ describe('Mock Console Log', () => {
 });
 
 describe('mockedRun', () => {
-    let mockRun: (_: () => any) => MockedRunResult;
-    let mocks: MockedRunResult;
-
-    beforeAll(() => {
-        mockRun = mockedRun({
-            stdout: mockProcessStdout,
-            stderr: mockProcessStderr,
-            exit: mockProcessExit,
-            log: mockConsoleLog,
-        });
+    const mockRun: (_: () => any) => MockedRunResult = mockedRun({
+        stdout: mockProcessStdout,
+        stderr: mockProcessStderr,
+        exit: mockProcessExit,
+        log: mockConsoleLog,
     });
+    let mocks: MockedRunResult;
 
     it('should call every mock once', () => {
         mocks = mockRun(() => {
@@ -239,20 +235,37 @@ describe('mockedRun', () => {
         });
         expect(mocks.error).toEqual(expectedError);
     });
+
+    it('should accept mocked process.exit raising an error', () => {
+        const error = new Error('Mock process exit');
+        const mockRunWithProcessExit = mockedRun({
+            stdout: mockProcessStdout,
+            stderr: mockProcessStderr,
+            exit: () => mockProcessExit(error),
+            log: mockConsoleLog,
+        });
+        mocks = mockRunWithProcessExit(() => {
+            process.stdout.write('stdout payload');
+            process.stderr.write('stderr payload');
+            process.exit(-1);
+            console.log('log payload');
+        });
+        expect(mocks.stdout).toHaveBeenCalledTimes(1);
+        expect(mocks.stderr).toHaveBeenCalledTimes(1);
+        expect(mocks.exit).toHaveBeenCalledTimes(1);
+        expect(mocks.log).not.toHaveBeenCalled();
+        expect(mocks.error).toBe(error);
+    });
 });
 
 describe('asyncMockedRun', () => {
-    let mockRun: (_: () => any) => Promise<MockedRunResult>;
-    let mocks: MockedRunResult;
-
-    beforeAll(() => {
-        mockRun = asyncMockedRun({
-            stdout: mockProcessStdout,
-            stderr: mockProcessStderr,
-            exit: mockProcessExit,
-            log: mockConsoleLog,
-        });
+    const mockRun: (_: () => any) => Promise<MockedRunResult> = asyncMockedRun({
+        stdout: mockProcessStdout,
+        stderr: mockProcessStderr,
+        exit: mockProcessExit,
+        log: mockConsoleLog,
     });
+    let mocks: MockedRunResult;
 
     it('should call every mock once', async () => {
         mocks = await mockRun(() => {
@@ -303,5 +316,29 @@ describe('asyncMockedRun', () => {
             });
         });
         expect(mocks.error).toEqual(expectedError);
+    });
+
+    it('should accept mocked process.exit raising an error', async () => {
+        const error = new Error('Mock process exit');
+        const mockRunWithProcessExit = asyncMockedRun({
+            stdout: mockProcessStdout,
+            stderr: mockProcessStderr,
+            exit: () => mockProcessExit(error),
+            log: mockConsoleLog,
+        });
+        mocks = await mockRunWithProcessExit(() => {
+            return new Promise((resolve) => {
+                process.stdout.write('stdout payload');
+                process.stderr.write('stderr payload');
+                process.exit(-1);
+                console.log('log payload');
+                resolve();
+            });
+        });
+        expect(mocks.stdout).toHaveBeenCalledTimes(1);
+        expect(mocks.stderr).toHaveBeenCalledTimes(1);
+        expect(mocks.exit).toHaveBeenCalledTimes(1);
+        expect(mocks.log).not.toHaveBeenCalled();
+        expect(mocks.error).toBe(error);
     });
 });

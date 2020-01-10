@@ -70,14 +70,16 @@ export interface MockedRunResult {
 }
 
 /**
- * Helper function to run a synchronous function with provided mocks in place.
+ * Helper function to run a synchronous function with provided mocks in place, as a virtual environment.
+ *
+ * Every provided mock will be automatically restored when this function returns.
  */
 export const mockedRun = (
     callers: {[_: string]: () => jest.SpyInstance}
 ) => (f: () => any) => {
     const mocks: MockedRunResult = {};
-    const mockers: {[_: string]: jest.SpyInstance} = Object.entries(callers).map(([k, caller]) => ({[k]: caller()}))
-        .reduce((o, acc) => ({...acc, ...o}));
+    const mockers: {[_: string]: jest.SpyInstance} = Object.entries(callers)
+        .map(([k, caller]) => ({[k]: caller()})).reduce((o, acc) => Object.assign(acc, o), {});
 
     try {
         mocks.result = f();
@@ -94,14 +96,16 @@ export const mockedRun = (
 };
 
 /**
- * Helper function to run an asynchronous function with provided mocks in place.
+ * Helper function to run an asynchronous function with provided mocks in place, as a virtual environment.
+ *
+ * Every provided mock will be automatically restored when this function returns.
  */
 export const asyncMockedRun = (
     callers: {[_: string]: () => jest.SpyInstance}
 ) => async (f: () => Promise<any>) => {
     const mocks: MockedRunResult = {};
-    const mockers: {[_: string]: jest.SpyInstance} = Object.entries(callers).map(([k, caller]) => ({[k]: caller()}))
-        .reduce((o, acc) => ({...acc, ...o}));
+    const mockers: {[_: string]: jest.SpyInstance} = Object.entries(callers)
+        .map(([k, caller]) => ({[k]: caller()})).reduce((o, acc) => Object.assign(acc, o), {});
 
     try {
         mocks.result = await f();
