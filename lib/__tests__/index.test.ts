@@ -2,7 +2,7 @@ import { asyncMockedRun, mockConsoleLog, mockedRun, MockedRunResult, mockProcess
     mockProcessStdout } from '../index';
 
 describe('Mock Process Exit', () => {
-    let mockExit: jest.SpyInstance<ReturnType<typeof process.exit>, ArgsType<typeof process.exit>>;
+    let mockExit: jest.SpyInstance;
 
     beforeEach(() => {
         mockExit = mockProcessExit();
@@ -48,7 +48,7 @@ describe('Mock Process Exit', () => {
 });
 
 describe('Mock Process Stdout', () => {
-    let mockStdout: jest.SpyInstance<ReturnType<typeof process.stdout.write>, ArgsType<typeof process.stdout.write>>;
+    let mockStdout: jest.SpyInstance;
 
     beforeEach(() => {
         mockStdout = mockProcessStdout();
@@ -100,7 +100,7 @@ describe('Mock Process Stdout', () => {
 });
 
 describe('Mock Process Stderr', () => {
-    let mockStderr: jest.SpyInstance<ReturnType<typeof process.stderr.write>, ArgsType<typeof process.stderr.write>>;
+    let mockStderr: jest.SpyInstance;
 
     beforeEach(() => {
         mockStderr = mockProcessStderr();
@@ -152,7 +152,7 @@ describe('Mock Process Stderr', () => {
 });
 
 describe('Mock Console Log', () => {
-    let mockLog: jest.SpyInstance<ReturnType<typeof console.log>, ArgsType<typeof console.log>>;
+    let mockLog: jest.SpyInstance;
 
     beforeEach(() => {
         mockLog = mockConsoleLog();
@@ -226,22 +226,24 @@ describe('mockedRun', () => {
             return 'return string';
         });
         expect(mocks.result).toEqual('return string');
+        expect(mocks.error).toBeUndefined();
     });
 
     it('should receive the correct thrown value', () => {
-        const expectedError = new Error('return string');
+        const expectedError = new Error('Mock error');
         mocks = mockRun(() => {
             throw expectedError;
         });
-        expect(mocks.error).toEqual(expectedError);
+        expect(mocks.result).toBeUndefined();
+        expect(mocks.error).toBe(expectedError);
     });
 
     it('should accept mocked process.exit raising an error', () => {
-        const error = new Error('Mock process exit');
+        const expectedError = new Error('Mock process exit');
         const mockRunWithProcessExit = mockedRun({
             stdout: mockProcessStdout,
             stderr: mockProcessStderr,
-            exit: () => mockProcessExit(error),
+            exit: () => mockProcessExit(expectedError),
             log: mockConsoleLog,
         });
         mocks = mockRunWithProcessExit(() => {
@@ -254,7 +256,8 @@ describe('mockedRun', () => {
         expect(mocks.stderr).toHaveBeenCalledTimes(1);
         expect(mocks.exit).toHaveBeenCalledTimes(1);
         expect(mocks.log).not.toHaveBeenCalled();
-        expect(mocks.error).toBe(error);
+        expect(mocks.result).toBeUndefined();
+        expect(mocks.error).toBe(expectedError);
     });
 });
 
@@ -306,24 +309,26 @@ describe('asyncMockedRun', () => {
             });
         });
         expect(mocks.result).toEqual('return string');
+        expect(mocks.error).toBeUndefined();
     });
 
     it('should receive the correct thrown value', async () => {
-        const expectedError = new Error('return string');
+        const expectedError = new Error('Mock error');
         mocks = await mockRun(() => {
             return new Promise((_, reject) => {
                 reject(expectedError);
             });
         });
-        expect(mocks.error).toEqual(expectedError);
+        expect(mocks.result).toBeUndefined();
+        expect(mocks.error).toBe(expectedError);
     });
 
     it('should accept mocked process.exit raising an error', async () => {
-        const error = new Error('Mock process exit');
+        const expectedError = new Error('Mock process exit');
         const mockRunWithProcessExit = asyncMockedRun({
             stdout: mockProcessStdout,
             stderr: mockProcessStderr,
-            exit: () => mockProcessExit(error),
+            exit: () => mockProcessExit(expectedError),
             log: mockConsoleLog,
         });
         mocks = await mockRunWithProcessExit(() => {
@@ -339,6 +344,7 @@ describe('asyncMockedRun', () => {
         expect(mocks.stderr).toHaveBeenCalledTimes(1);
         expect(mocks.exit).toHaveBeenCalledTimes(1);
         expect(mocks.log).not.toHaveBeenCalled();
-        expect(mocks.error).toBe(error);
+        expect(mocks.result).toBeUndefined();
+        expect(mocks.error).toBe(expectedError);
     });
 });
