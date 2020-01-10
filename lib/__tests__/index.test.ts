@@ -1,7 +1,8 @@
-import { mockProcessExit, mockProcessStdout, mockProcessStderr, mockConsoleLog } from '../index';
+import { asyncMockedRun, mockConsoleLog, mockedRun, MockedRunResult, mockProcessExit, mockProcessStderr,
+    mockProcessStdout } from '../index';
 
 describe('Mock Process Exit', () => {
-    let mockExit: jest.SpyInstance<(_: number) => never>;
+    let mockExit: jest.SpyInstance;
 
     beforeEach(() => {
         mockExit = mockProcessExit();
@@ -47,7 +48,7 @@ describe('Mock Process Exit', () => {
 });
 
 describe('Mock Process Stdout', () => {
-    let mockStdout: jest.SpyInstance<(buffer: Buffer | string, encoding?: string, cb?: Function) => boolean>;
+    let mockStdout: jest.SpyInstance;
 
     beforeEach(() => {
         mockStdout = mockProcessStdout();
@@ -99,7 +100,7 @@ describe('Mock Process Stdout', () => {
 });
 
 describe('Mock Process Stderr', () => {
-    let mockStderr: jest.SpyInstance<(buffer: Buffer | string, encoding?: string, cb?: Function) => boolean>;
+    let mockStderr: jest.SpyInstance;
 
     beforeEach(() => {
         mockStderr = mockProcessStderr();
@@ -151,7 +152,7 @@ describe('Mock Process Stderr', () => {
 });
 
 describe('Mock Console Log', () => {
-    let mockLog: jest.SpyInstance<(message?: any, ...optionalParams: any[]) => void>;
+    let mockLog: jest.SpyInstance;
 
     beforeEach(() => {
         mockLog = mockConsoleLog();
@@ -164,7 +165,7 @@ describe('Mock Console Log', () => {
     });
 
     it('should receive an object', () => {
-        const obj = {'array': [] as number[], 'null': null as number};
+        const obj = {array: [] as any[], null: null as any};
         console.log(obj);
         expect(mockLog).toHaveBeenCalledTimes(1);
         expect(mockLog).toHaveBeenCalledWith(obj);
@@ -182,5 +183,168 @@ describe('Mock Console Log', () => {
 
     afterAll(() => {
         mockLog.mockRestore();
+    });
+});
+
+describe('mockedRun', () => {
+    const mockRun: (_: () => any) => MockedRunResult = mockedRun({
+        stdout: mockProcessStdout,
+        stderr: mockProcessStderr,
+        exit: mockProcessExit,
+        log: mockConsoleLog,
+    });
+    let mocks: MockedRunResult;
+
+    it('should call every mock once', () => {
+        mocks = mockRun(() => {
+            process.stdout.write('stdout payload');
+            process.stderr.write('stderr payload');
+            process.exit(-1);
+            console.log('log payload');
+        });
+        expect(mocks.stdout).toHaveBeenCalledTimes(1);
+        expect(mocks.stderr).toHaveBeenCalledTimes(1);
+        expect(mocks.exit).toHaveBeenCalledTimes(1);
+        expect(mocks.log).toHaveBeenCalledTimes(1);
+    });
+
+    it('should receive the correct arguments', () => {
+        mocks = mockRun(() => {
+            process.stdout.write('stdout payload');
+            process.stderr.write('stderr payload');
+            process.exit(-1);
+            console.log('log payload');
+        });
+        expect(mocks.stdout).toHaveBeenCalledWith('stdout payload');
+        expect(mocks.stderr).toHaveBeenCalledWith('stderr payload');
+        expect(mocks.exit).toHaveBeenCalledWith(-1);
+        expect(mocks.log).toHaveBeenCalledWith('log payload');
+    });
+
+    it('should receive the correct return value', () => {
+        mocks = mockRun(() => {
+            return 'return string';
+        });
+        expect(mocks.result).toEqual('return string');
+        expect(mocks.error).toBeUndefined();
+    });
+
+    it('should receive the correct thrown value', () => {
+        const expectedError = new Error('Mock error');
+        mocks = mockRun(() => {
+            throw expectedError;
+        });
+        expect(mocks.result).toBeUndefined();
+        expect(mocks.error).toBe(expectedError);
+    });
+
+    it('should accept mocked process.exit raising an error', () => {
+        const expectedError = new Error('Mock process exit');
+        const mockRunWithProcessExit = mockedRun({
+            stdout: mockProcessStdout,
+            stderr: mockProcessStderr,
+            exit: () => mockProcessExit(expectedError),
+            log: mockConsoleLog,
+        });
+        mocks = mockRunWithProcessExit(() => {
+            process.stdout.write('stdout payload');
+            process.stderr.write('stderr payload');
+            process.exit(-1);
+            console.log('log payload');
+        });
+        expect(mocks.stdout).toHaveBeenCalledTimes(1);
+        expect(mocks.stderr).toHaveBeenCalledTimes(1);
+        expect(mocks.exit).toHaveBeenCalledTimes(1);
+        expect(mocks.log).not.toHaveBeenCalled();
+        expect(mocks.result).toBeUndefined();
+        expect(mocks.error).toBe(expectedError);
+    });
+});
+
+describe('asyncMockedRun', () => {
+    const mockRun: (_: () => any) => Promise<MockedRunResult> = asyncMockedRun({
+        stdout: mockProcessStdout,
+        stderr: mockProcessStderr,
+        exit: mockProcessExit,
+        log: mockConsoleLog,
+    });
+    let mocks: MockedRunResult;
+
+    it('should call every mock once', async () => {
+        mocks = await mockRun(() => {
+            return new Promise((resolve) => {
+                process.stdout.write('stdout payload');
+                process.stderr.write('stderr payload');
+                process.exit(-1);
+                console.log('log payload');
+                resolve();
+            });
+        });
+        expect(mocks.stdout).toHaveBeenCalledTimes(1);
+        expect(mocks.stderr).toHaveBeenCalledTimes(1);
+        expect(mocks.exit).toHaveBeenCalledTimes(1);
+        expect(mocks.log).toHaveBeenCalledTimes(1);
+    });
+
+    it('should receive the correct arguments', async () => {
+        mocks = await mockRun(() => {
+            return new Promise((resolve) => {
+                process.stdout.write('stdout payload');
+                process.stderr.write('stderr payload');
+                process.exit(-1);
+                console.log('log payload');
+                resolve();
+            });
+        });
+        expect(mocks.stdout).toHaveBeenCalledWith('stdout payload');
+        expect(mocks.stderr).toHaveBeenCalledWith('stderr payload');
+        expect(mocks.exit).toHaveBeenCalledWith(-1);
+        expect(mocks.log).toHaveBeenCalledWith('log payload');
+    });
+
+    it('should receive the correct return value', async () => {
+        mocks = await mockRun(() => {
+            return new Promise((resolve) => {
+                resolve('return string');
+            });
+        });
+        expect(mocks.result).toEqual('return string');
+        expect(mocks.error).toBeUndefined();
+    });
+
+    it('should receive the correct thrown value', async () => {
+        const expectedError = new Error('Mock error');
+        mocks = await mockRun(() => {
+            return new Promise((_, reject) => {
+                reject(expectedError);
+            });
+        });
+        expect(mocks.result).toBeUndefined();
+        expect(mocks.error).toBe(expectedError);
+    });
+
+    it('should accept mocked process.exit raising an error', async () => {
+        const expectedError = new Error('Mock process exit');
+        const mockRunWithProcessExit = asyncMockedRun({
+            stdout: mockProcessStdout,
+            stderr: mockProcessStderr,
+            exit: () => mockProcessExit(expectedError),
+            log: mockConsoleLog,
+        });
+        mocks = await mockRunWithProcessExit(() => {
+            return new Promise((resolve) => {
+                process.stdout.write('stdout payload');
+                process.stderr.write('stderr payload');
+                process.exit(-1);
+                console.log('log payload');
+                resolve();
+            });
+        });
+        expect(mocks.stdout).toHaveBeenCalledTimes(1);
+        expect(mocks.stderr).toHaveBeenCalledTimes(1);
+        expect(mocks.exit).toHaveBeenCalledTimes(1);
+        expect(mocks.log).not.toHaveBeenCalled();
+        expect(mocks.result).toBeUndefined();
+        expect(mocks.error).toBe(expectedError);
     });
 });
