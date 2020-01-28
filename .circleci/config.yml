@@ -1,13 +1,10 @@
 version: 2
 
-defaults: &defaults
-  working_directory: ~/project
-  docker:
-    - image: circleci/node:8.9.1
-
 jobs:
   test:
-    <<: *defaults
+    working_directory: &working_directory ~/project
+    docker: &docker
+      - image: circleci/node:8.9.1
     steps:
       - checkout
       - restore_cache:
@@ -21,7 +18,8 @@ jobs:
             - ./node_modules
       - run: npm run coverage
   deploy:
-    <<: *defaults
+    working_directory: *working_directory
+    docker: *docker
     steps:
       - checkout
       - restore_cache:
@@ -39,17 +37,17 @@ jobs:
 
 workflows:
   version: 2
-  pr-acceptance-tests:
-    jobs:
-      - test
   commit:
     jobs:
-      - test
+      - test:
+          filters:
+            tags:
+              only: /.*/
       - deploy:
           requires:
             - test
           filters:
             tags:
-              only: /v[0-9]+(\.[0-9]+)*$/
+              only: /^v.*/
             branches:
               ignore: /.*/
