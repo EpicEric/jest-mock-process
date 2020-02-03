@@ -34,12 +34,12 @@
     "@types/jest": "^23.3.1",
     "@types/node": "^10.5.4",
     "coveralls": "^3.0.2",
-    "jest": "^24.3.0",
+    "jest": "^25.1.0",
     "ts-jest": "^23.0.1",
     "typescript": "^3.0.1"
   },
   "peerDependencies": {
-    "jest": ">=23.4 <25"
+    "jest": ">=23.4 <26"
   },
   "jest": {
     "moduleFileExtensions": [
