@@ -9,7 +9,7 @@ type ArgsType<T> = T extends (...args: infer A) => any ? A : never;
  *
  * @param target Object containing the function that will be mocked.
  * @param property Name of the function that will be mocked.
- * @param impl Mock implementation of the. The return type must match the target function.
+ * @param impl Mock implementation of the target's function. The return type must match the target function's.
  */
 export function spyOnImplementing<
     T extends object,
@@ -18,7 +18,7 @@ export function spyOnImplementing<
     I extends (...args: any[]) => ReturnType<F>,
 >(target: T, property: M, impl: I): jest.SpyInstance<ReturnType<F>, ArgsType<F>> {
     maybeMockRestore(target[property]);
-    return jest.spyOn(target, property).mockImplementation(impl);
+    return jest.spyOn(target, property as any).mockImplementation(impl);
 }
 
 /**
@@ -31,7 +31,7 @@ export function spyOnImplementing<
 export const mockProcessExit = (err?: any) => spyOnImplementing(
     process,
     'exit',
-    (err ? (_?: number) => { throw err; } : ((_?: number) => {})) as () => never,
+    (err ? () => { throw err; } : (() => {})) as () => never,
 );
 
 /**

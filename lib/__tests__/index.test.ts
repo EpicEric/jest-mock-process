@@ -2,7 +2,7 @@ import { asyncMockedRun, mockConsoleLog, mockedRun, MockedRunResult, mockProcess
     mockProcessStdout } from '../index';
 
 describe('Mock Process Exit', () => {
-    let mockExit: jest.SpyInstance;
+    let mockExit: jest.SpyInstance<never>;
 
     beforeEach(() => {
         mockExit = mockProcessExit();
