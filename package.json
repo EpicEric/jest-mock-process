@@ -31,12 +31,12 @@
   },
   "homepage": "https://github.com/EpicEric/jest-mock-process#readme",
   "devDependencies": {
-    "@types/jest": "^25.2.1",
-    "@types/node": "^10.5.4",
+    "@types/jest": "^26.0.10",
+    "@types/node": "^10.17.28",
     "coveralls": "^3.1.0",
-    "jest": "^26.0.0",
-    "ts-jest": "^25.4.0",
-    "typescript": "^3.8.3"
+    "jest": "^26.4.2",
+    "ts-jest": "^26.3.0",
+    "typescript": "^3.9.7"
   },
   "peerDependencies": {
     "jest": ">=23.4 <27"
