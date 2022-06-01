@@ -1,8 +1,9 @@
 const maybeMockRestore = (a: any): void =>
     a.mockRestore && typeof a.mockRestore === 'function' ? a.mockRestore() : undefined;
 
-type FunctionPropertyNames<T> = {[K in keyof T]: T[K] extends (...args: any[]) => any ? K : never}[keyof T];
-type ArgsType<T> = T extends (...args: infer A) => any ? A : never;
+type JMPFunctionPropertyNames<T> = {[K in keyof T]: T[K] extends (...args: any[]) => any ? K : never}[keyof T] & string;
+type JMPArgsType<T> = T extends (...args: infer A) => any ? A : never;
+type JMPReturnType<T> = T extends (...args: any[]) => infer A ? A : never;
 
 /**
  * Helper function for manually creating new spy mocks of functions not supported by this module.
@@ -12,11 +13,11 @@ type ArgsType<T> = T extends (...args: infer A) => any ? A : never;
  * @param impl Mock implementation of the target's function. The return type must match the target function's.
  */
 export function spyOnImplementing<
-    T extends object,
-    M extends FunctionPropertyNames<T>,
+    T extends {},
+    M extends JMPFunctionPropertyNames<T>,
     F extends T[M],
-    I extends (...args: any[]) => ReturnType<F>,
->(target: T, property: M, impl: I): jest.SpyInstance<ReturnType<F>, ArgsType<F>> {
+    I extends (...args: any[]) => JMPReturnType<F>,
+>(target: T, property: M, impl: I): jest.SpyInstance<Required<JMPReturnType<F>>, JMPArgsType<F>> {
     maybeMockRestore(target[property]);
     return jest.spyOn(target, property as any).mockImplementation(impl);
 }

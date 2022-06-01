@@ -1,4 +1,4 @@
-# jest-mock-process [![npm version](https://badge.fury.io/js/jest-mock-process.svg)](https://www.npmjs.com/package/jest-mock-process) [![CircleCI](https://circleci.com/gh/EpicEric/jest-mock-process/tree/master.svg?style=svg)](https://circleci.com/gh/EpicEric/jest-mock-process/tree/master) [![Coverage Status](https://coveralls.io/repos/github/EpicEric/jest-mock-process/badge.svg?branch=master)](https://coveralls.io/github/EpicEric/jest-mock-process?branch=master)
+# jest-mock-process [![npm version](https://badge.fury.io/js/jest-mock-process.svg)](https://www.npmjs.com/package/jest-mock-process) [![CircleCI](https://circleci.com/gh/EpicEric/jest-mock-process/tree/main.svg?style=svg)](https://circleci.com/gh/EpicEric/jest-mock-process/tree/main) [![Coverage Status](https://coveralls.io/repos/github/EpicEric/jest-mock-process/badge.svg?branch=main)](https://coveralls.io/github/EpicEric/jest-mock-process?branch=master)
 
 Easily mock NodeJS process properties in Jest.
 

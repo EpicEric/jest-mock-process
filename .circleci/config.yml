@@ -1,10 +1,9 @@
-version: 2
+version: 2.1
 
 jobs:
   test:
-    working_directory: &working_directory ~/project
     docker: &docker
-      - image: circleci/node:10
+      - image: cimg/node:16.15
     steps:
       - checkout
       - restore_cache:
@@ -18,7 +17,6 @@ jobs:
             - ./node_modules
       - run: npm run coverage
   deploy:
-    working_directory: *working_directory
     docker: *docker
     steps:
       - checkout
@@ -36,7 +34,6 @@ jobs:
       - run: npm publish
 
 workflows:
-  version: 2
   commit:
     jobs:
       - test:

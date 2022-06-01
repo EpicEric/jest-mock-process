@@ -272,7 +272,7 @@ describe('asyncMockedRun', () => {
 
     it('should call every mock once', async () => {
         mocks = await mockRun(() => {
-            return new Promise((resolve) => {
+            return new Promise<void>((resolve) => {
                 process.stdout.write('stdout payload');
                 process.stderr.write('stderr payload');
                 process.exit(-1);
@@ -288,7 +288,7 @@ describe('asyncMockedRun', () => {
 
     it('should receive the correct arguments', async () => {
         mocks = await mockRun(() => {
-            return new Promise((resolve) => {
+            return new Promise<void>((resolve) => {
                 process.stdout.write('stdout payload');
                 process.stderr.write('stderr payload');
                 process.exit(-1);
@@ -332,7 +332,7 @@ describe('asyncMockedRun', () => {
             log: mockConsoleLog,
         });
         mocks = await mockRunWithProcessExit(() => {
-            return new Promise((resolve) => {
+            return new Promise<void>((resolve) => {
                 process.stdout.write('stdout payload');
                 process.stderr.write('stderr payload');
                 process.exit(-1);
