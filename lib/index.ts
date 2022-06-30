@@ -1,7 +1,12 @@
 const maybeMockRestore = (a: any): void =>
-    a.mockRestore && typeof a.mockRestore === 'function' ? a.mockRestore() : undefined;
+  a.mockRestore && typeof a.mockRestore === "function"
+    ? a.mockRestore()
+    : undefined;
 
-type JMPFunctionPropertyNames<T> = {[K in keyof T]: T[K] extends (...args: any[]) => any ? K : never}[keyof T] & string;
+type JMPFunctionPropertyNames<T> = {
+  [K in keyof T]: T[K] extends (...args: any[]) => any ? K : never;
+}[keyof T] &
+  string;
 type JMPArgsType<T> = T extends (...args: infer A) => any ? A : never;
 type JMPReturnType<T> = T extends (...args: any[]) => infer A ? A : never;
 
@@ -13,13 +18,17 @@ type JMPReturnType<T> = T extends (...args: any[]) => infer A ? A : never;
  * @param impl Mock implementation of the target's function. The return type must match the target function's.
  */
 export function spyOnImplementing<
-    T extends {},
-    M extends JMPFunctionPropertyNames<T>,
-    F extends T[M],
-    I extends (...args: any[]) => JMPReturnType<F>,
->(target: T, property: M, impl: I): jest.SpyInstance<Required<JMPReturnType<F>>, JMPArgsType<F>> {
-    maybeMockRestore(target[property]);
-    return jest.spyOn(target, property as any).mockImplementation(impl);
+  T extends {},
+  M extends JMPFunctionPropertyNames<T>,
+  F extends T[M],
+  I extends (...args: any[]) => JMPReturnType<F>
+>(
+  target: T,
+  property: M,
+  impl: I
+): jest.SpyInstance<Required<JMPReturnType<F>>, JMPArgsType<F>> {
+  maybeMockRestore(target[property]);
+  return jest.spyOn(target, property as any).mockImplementation(impl);
 }
 
 /**
@@ -29,46 +38,56 @@ export function spyOnImplementing<
  * @param {Object} err Optional error to raise. If unspecified or falsy, calling `process.exit` will resume code
  * execution instead of raising an error.
  */
-export const mockProcessExit = (err?: any) => spyOnImplementing(
+export const mockProcessExit = (err?: any) =>
+  spyOnImplementing(
     process,
-    'exit',
-    (err ? () => { throw err; } : (() => {})) as () => never,
-);
+    "exit",
+    (err
+      ? () => {
+          throw err;
+        }
+      : () => {}) as () => never
+  );
 
 /**
  * Helper function to create a mock of the Node.js method
  * `process.stdout.write(text: string, callback?: function): boolean`.
  */
-export const mockProcessStdout = () => spyOnImplementing(
-    process.stdout,
-    'write',
-    (() => true),
-);
+export const mockProcessStdout = () =>
+  spyOnImplementing(process.stdout, "write", () => true);
 
 /**
  * Helper function to create a mock of the Node.js method
  * `process.stderr.write(text: string, callback?: function): boolean`.
  */
-export const mockProcessStderr = () => spyOnImplementing(
-    process.stderr,
-    'write',
-    (() => true),
-);
+export const mockProcessStderr = () =>
+  spyOnImplementing(process.stderr, "write", () => true);
+
+/**
+ * Helper function to create a mock of the Node.js method
+ * `process.uptime()`.
+ */
+export const mockProcessUptime = (value?: number) =>
+  spyOnImplementing(process, "uptime", () => value ?? 0);
 
 /**
  * Helper function to create a mock of the Node.js method
  * `console.log(message: any)`.
  */
-export const mockConsoleLog = () => spyOnImplementing(
-    console,
-    'log',
-    (() => {}),
-);
+export const mockConsoleLog = () => spyOnImplementing(console, "log", () => {});
 
-export interface MockedRunResult {
-    error?: any;
-    result?: any;
-    [_: string]: jest.SpyInstance;
+type JestCallableMocksObject = {
+  [_: string]: () => jest.SpyInstance;
+};
+
+type JestMocksObject<T extends JestCallableMocksObject> = {
+  [K in keyof T]: T[K] extends () => infer J ? J : never;
+};
+
+export interface MockedRunResult<R, M> {
+  error?: any;
+  result?: R;
+  mocks: M;
 }
 
 /**
@@ -76,49 +95,57 @@ export interface MockedRunResult {
  *
  * Every provided mock will be automatically restored when this function returns.
  */
-export const mockedRun = (
-    callers: {[_: string]: () => jest.SpyInstance}
-) => (f: () => any) => {
-    const mocks: MockedRunResult = {};
-    const mockers: {[_: string]: jest.SpyInstance} = Object.entries(callers)
-        .map(([k, caller]) => ({[k]: caller()})).reduce((o, acc) => Object.assign(acc, o), {});
+export function mockedRun<T extends JestCallableMocksObject, R>(callers: T) {
+  return (f: () => R) => {
+    const mocks: any = {
+      mocks: {},
+    };
+    const mockers: { [_: string]: jest.SpyInstance } = Object.entries(callers)
+      .map(([k, caller]) => ({ [k]: caller() }))
+      .reduce((o, acc) => Object.assign(acc, o), {});
 
     try {
-        mocks.result = f();
+      mocks.result = f();
     } catch (error) {
-        mocks.error = error;
+      mocks.error = error;
     }
 
     Object.entries(mockers).map(([k, mocker]) => {
-        mocks[k] = Object.assign({}, mocker);
-        maybeMockRestore(mocker);
+      mocks.mocks[k] = Object.assign({}, mocker);
+      maybeMockRestore(mocker);
     });
 
-    return mocks;
-};
+    return mocks as MockedRunResult<R, JestMocksObject<T>>;
+  };
+}
 
 /**
  * Helper function to run an asynchronous function with provided mocks in place, as a virtual environment.
  *
  * Every provided mock will be automatically restored when this function returns.
  */
-export const asyncMockedRun = (
-    callers: {[_: string]: () => jest.SpyInstance}
-) => async (f: () => Promise<any>) => {
-    const mocks: MockedRunResult = {};
-    const mockers: {[_: string]: jest.SpyInstance} = Object.entries(callers)
-        .map(([k, caller]) => ({[k]: caller()})).reduce((o, acc) => Object.assign(acc, o), {});
+export function asyncMockedRun<T extends JestCallableMocksObject, R>(
+  callers: T
+) {
+  return async (f: () => Promise<R>) => {
+    const mocks: any = {
+      mocks: {},
+    };
+    const mockers: { [_: string]: jest.SpyInstance } = Object.entries(callers)
+      .map(([k, caller]) => ({ [k]: caller() }))
+      .reduce((o, acc) => Object.assign(acc, o), {});
 
     try {
-        mocks.result = await f();
+      mocks.result = await f();
     } catch (error) {
-        mocks.error = error;
+      mocks.error = error;
     }
 
     Object.entries(mockers).map(([k, mocker]) => {
-        mocks[k] = Object.assign({}, mocker);
-        maybeMockRestore(mocker);
+      mocks.mocks[k] = Object.assign({}, mocker);
+      maybeMockRestore(mocker);
     });
 
-    return mocks;
-};
+    return mocks as MockedRunResult<R, JestMocksObject<T>>;
+  };
+}
