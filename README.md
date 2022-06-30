@@ -46,6 +46,7 @@ expect(mockLog).toHaveBeenCalledWith("Browser log");
 mockExit.mockRestore();
 mockStdout.mockRestore();
 mockStderr.mockRestore();
+mockUptime.mockRestore();
 mockLog.mockRestore();
 ```
 
